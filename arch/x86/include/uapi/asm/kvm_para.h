@@ -4,25 +4,31 @@
 
 #include <linux/types.h>
 
-/* This CPUID returns the signature 'KVMKVMKVM' in ebx, ecx, and edx.  It
- * should be used to determine that a VM is running under KVM.
+/* This CPUID returns the signature 'KVMKVMKVM' 
+ * in ebx, ecx, and edx. It should be used to 
+ * determine that a VM is running under KVM.
  */
 #define KVM_CPUID_SIGNATURE	0x40000000
 #define KVM_SIGNATURE "KVMKVMKVM\0\0\0"
 
-/* This CPUID returns two feature bitmaps in eax, edx. Before enabling
- * a particular paravirtualization, the appropriate feature bit should
- * be checked in eax. The performance hint feature bit should be checked
- * in edx.
+/* This CPUID returns two feature bitmaps in 
+ * eax, edx. Before enabling a particular 
+ * paravirtualization, the appropriate feature 
+ * bit should be checked in eax. The performance 
+ * hint feature bit should be checked in edx.
  */
 #define KVM_CPUID_FEATURES	0x40000001
+
 #define KVM_FEATURE_CLOCKSOURCE		0
 #define KVM_FEATURE_NOP_IO_DELAY	1
 #define KVM_FEATURE_MMU_OP		2
-/* This indicates that the new set of kvmclock msrs
- * are available. The use of 0x11 and 0x12 is deprecated
+
+/* This indicates that the new set of kvmclock 
+ * msrs are available. The use of 0x11 and 0x12 
+ * is deprecated.
  */
 #define KVM_FEATURE_CLOCKSOURCE2        3
+
 #define KVM_FEATURE_ASYNC_PF		4
 #define KVM_FEATURE_STEAL_TIME		5
 #define KVM_FEATURE_PV_EOI		6

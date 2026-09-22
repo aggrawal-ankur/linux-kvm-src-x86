@@ -33,7 +33,6 @@
 #define XM_VECTOR 19
 #define VE_VECTOR 20
 #define CP_VECTOR 21
-
 #define HV_VECTOR 28
 #define VC_VECTOR 29
 #define SX_VECTOR 30
@@ -111,9 +110,8 @@ struct kvm_ioapic_state {
 #define KVM_RUN_X86_BUS_LOCK      (1 << 1)
 #define KVM_RUN_X86_GUEST_MODE    (1 << 2)
 
-/* for KVM_GET_REGS and KVM_SET_REGS */
+/* for KVM_GET_REGS (out) and KVM_SET_REGS (in) */
 struct kvm_regs {
-	/* out (KVM_GET_REGS) / in (KVM_SET_REGS) */
 	__u64 rax, rbx, rcx, rdx;
 	__u64 rsi, rdi, rsp, rbp;
 	__u64 r8,  r9,  r10, r11;
@@ -144,7 +142,7 @@ struct kvm_dtable {
 };
 
 
-/* for KVM_GET_SREGS and KVM_SET_SREGS */
+/* for KVM_GET_SREGS (out) and KVM_SET_SREGS (in) */
 struct kvm_sregs {
 	/* out (KVM_GET_SREGS) / in (KVM_SET_SREGS) */
 	struct kvm_segment cs, ds, es, fs, gs, ss;
@@ -157,8 +155,8 @@ struct kvm_sregs {
 	__u64 interrupt_bitmap[(KVM_NR_INTERRUPTS + 63) / 64];
 };
 
+/* for KVM_GET_SREGS2 (out) and KVM_SET_SREGS2 (in) */
 struct kvm_sregs2 {
-	/* out (KVM_GET_SREGS2) / in (KVM_SET_SREGS2) */
 	struct kvm_segment cs, ds, es, fs, gs, ss;
 	struct kvm_segment tr, ldt;
 	struct kvm_dtable  gdt, idt;
@@ -337,12 +335,12 @@ struct kvm_reinject_control {
 };
 
 /* When set in flags, include corresponding fields on KVM_SET_VCPU_EVENTS */
-#define KVM_VCPUEVENT_VALID_NMI_PENDING	0x00000001
-#define KVM_VCPUEVENT_VALID_SIPI_VECTOR	0x00000002
-#define KVM_VCPUEVENT_VALID_SHADOW	0x00000004
-#define KVM_VCPUEVENT_VALID_SMM		0x00000008
-#define KVM_VCPUEVENT_VALID_PAYLOAD	0x00000010
-#define KVM_VCPUEVENT_VALID_TRIPLE_FAULT	0x00000020
+#define KVM_VCPUEVENT_VALID_NMI_PENDING  0x00000001
+#define KVM_VCPUEVENT_VALID_SIPI_VECTOR  0x00000002
+#define KVM_VCPUEVENT_VALID_SHADOW       0x00000004
+#define KVM_VCPUEVENT_VALID_SMM          0x00000008
+#define KVM_VCPUEVENT_VALID_PAYLOAD      0x00000010
+#define KVM_VCPUEVENT_VALID_TRIPLE_FAULT 0x00000020
 
 /* Interrupt shadow states */
 #define KVM_X86_SHADOW_INT_MOV_SS	0x01
@@ -437,9 +435,11 @@ struct kvm_xcrs {
 #define KVM_X86_REG_TYPE_MSR		2
 #define KVM_X86_REG_TYPE_KVM		3
 
-#define KVM_X86_KVM_REG_SIZE(reg)						\
-({										\
-	reg == KVM_REG_GUEST_SSP ? KVM_REG_SIZE_U64 : 0;			\
+#define KVM_X86_KVM_REG_SIZE(reg)    \
+({  \
+	reg == KVM_REG_GUEST_SSP  \
+	? KVM_REG_SIZE_U64        \
+	: 0;  \
 })
 
 #define KVM_X86_REG_TYPE_SIZE(type, reg)    \
@@ -518,13 +518,13 @@ struct kvm_sync_regs {
 
 /* vendor-independent attributes for system fd (group 0) */
 #define KVM_X86_GRP_SYSTEM		0
-#  define KVM_X86_XCOMP_GUEST_SUPP	0
+#define KVM_X86_XCOMP_GUEST_SUPP	0
 
 /* vendor-specific groups and attributes for system fd */
 #define KVM_X86_GRP_SEV			1
-#  define KVM_X86_SEV_VMSA_FEATURES	0
-#  define KVM_X86_SNP_POLICY_BITS	1
-#  define KVM_X86_SEV_SNP_REQ_CERTS	2
+#define KVM_X86_SEV_VMSA_FEATURES  0
+#define KVM_X86_SNP_POLICY_BITS    1
+#define KVM_X86_SEV_SNP_REQ_CERTS  2
 
 struct kvm_vmx_nested_state_data {
 	__u8 vmcs12[KVM_STATE_NESTED_VMX_VMCS_SIZE];
@@ -739,10 +739,12 @@ struct kvm_xen_vcpu_attr {
 #define KVM_XEN_VCPU_ATTR_TYPE_RUNSTATE_CURRENT	0x3
 #define KVM_XEN_VCPU_ATTR_TYPE_RUNSTATE_DATA	0x4
 #define KVM_XEN_VCPU_ATTR_TYPE_RUNSTATE_ADJUST	0x5
+
 /* Available with KVM_CAP_XEN_HVM / KVM_XEN_HVM_CONFIG_EVTCHN_SEND */
 #define KVM_XEN_VCPU_ATTR_TYPE_VCPU_ID		0x6
 #define KVM_XEN_VCPU_ATTR_TYPE_TIMER		0x7
 #define KVM_XEN_VCPU_ATTR_TYPE_UPCALL_VECTOR	0x8
+
 /* Available with KVM_CAP_XEN_HVM / KVM_XEN_HVM_CONFIG_SHARED_INFO_HVA */
 #define KVM_XEN_VCPU_ATTR_TYPE_VCPU_INFO_HVA	0x9
 
@@ -830,7 +832,6 @@ struct kvm_sev_launch_update_data {
 	__u32 len;
 	__u32 pad0;
 };
-
 
 struct kvm_sev_launch_secret {
 	__u64 hdr_uaddr;
@@ -1035,14 +1036,17 @@ enum kvm_tdx_cmd_id {
 struct kvm_tdx_cmd {
 	/* enum kvm_tdx_cmd_id */
 	__u32 id;
+
 	/* flags for sub-commend. If sub-command doesn't use this, set zero. */
 	__u32 flags;
+
 	/*
 	 * data for each sub-command. An immediate or a pointer to the actual
 	 * data in process virtual address.  If sub-command doesn't use it,
 	 * set zero.
 	 */
 	__u64 data;
+
 	/*
 	 * Auxiliary error code.  The sub-command may return TDX SEAMCALL
 	 * status code in addition to -Exxx.

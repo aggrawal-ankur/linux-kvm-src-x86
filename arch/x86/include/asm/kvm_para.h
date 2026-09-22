@@ -18,17 +18,20 @@ static inline bool kvm_check_and_clear_guest_paused(void)
 }
 #endif /* CONFIG_KVM_GUEST */
 
-#define KVM_HYPERCALL \
-        ALTERNATIVE("vmcall", "vmmcall", X86_FEATURE_VMMCALL)
+#define  KVM_HYPERCALL  ALTERNATIVE("vmcall", "vmmcall", X86_FEATURE_VMMCALL)
 
-/* For KVM hypercalls, a three-byte sequence of either the vmcall or the vmmcall
- * instruction.  The hypervisor may replace it with something else but only the
- * instructions are guaranteed to be supported.
+/* For KVM hypercalls, a three-byte sequence of 
+ * either the vmcall or the vmmcall instruction. 
+ * The hypervisor may replace it with something 
+ * else but only the instructions are guaranteed 
+ * to be supported.
  *
- * Up to four arguments may be passed in rbx, rcx, rdx, and rsi respectively.
- * The hypercall number should be placed in rax and the return value will be
- * placed in rax.  No other registers will be clobbered unless explicitly
- * noted by the particular hypercall.
+ * Up to four arguments may be passed in rbx, rcx, 
+ * rdx, and rsi respectively. The hypercall number 
+ * should be placed in rax and the return value will 
+ * be placed in rax. No other registers will be 
+ * clobbered unless explicitly noted by the particular 
+ * hypercall.
  */
 
 static inline long kvm_hypercall0(unsigned int nr)
@@ -45,8 +48,9 @@ static inline long kvm_hypercall0(unsigned int nr)
 	return ret;
 }
 
-static inline long kvm_hypercall1(unsigned int nr, unsigned long p1)
-{
+static inline long kvm_hypercall1(
+	unsigned int nr, unsigned long p1
+){
 	long ret;
 
 	if (cpu_feature_enabled(X86_FEATURE_TDX_GUEST))
@@ -59,9 +63,10 @@ static inline long kvm_hypercall1(unsigned int nr, unsigned long p1)
 	return ret;
 }
 
-static inline long kvm_hypercall2(unsigned int nr, unsigned long p1,
-				  unsigned long p2)
-{
+static inline long kvm_hypercall2(
+	unsigned int nr, 
+	unsigned long p1, unsigned long p2
+){
 	long ret;
 
 	if (cpu_feature_enabled(X86_FEATURE_TDX_GUEST))
@@ -74,9 +79,10 @@ static inline long kvm_hypercall2(unsigned int nr, unsigned long p1,
 	return ret;
 }
 
-static inline long kvm_hypercall3(unsigned int nr, unsigned long p1,
-				  unsigned long p2, unsigned long p3)
-{
+static inline long kvm_hypercall3(
+	unsigned int nr, unsigned long p1,
+	unsigned long p2, unsigned long p3
+){
 	long ret;
 
 	if (cpu_feature_enabled(X86_FEATURE_TDX_GUEST))
@@ -89,10 +95,11 @@ static inline long kvm_hypercall3(unsigned int nr, unsigned long p1,
 	return ret;
 }
 
-static inline long kvm_hypercall4(unsigned int nr, unsigned long p1,
-				  unsigned long p2, unsigned long p3,
-				  unsigned long p4)
-{
+static inline long kvm_hypercall4(
+	unsigned int nr, 
+	unsigned long p1, unsigned long p2, 
+	unsigned long p3, unsigned long p4
+){
 	long ret;
 
 	if (cpu_feature_enabled(X86_FEATURE_TDX_GUEST))
@@ -105,9 +112,10 @@ static inline long kvm_hypercall4(unsigned int nr, unsigned long p1,
 	return ret;
 }
 
-static inline long kvm_sev_hypercall3(unsigned int nr, unsigned long p1,
-				      unsigned long p2, unsigned long p3)
-{
+static inline long kvm_sev_hypercall3(
+	unsigned int nr, unsigned long p1,
+	unsigned long p2, unsigned long p3
+){
 	long ret;
 
 	asm volatile("vmmcall"
@@ -121,15 +129,18 @@ static inline long kvm_sev_hypercall3(unsigned int nr, unsigned long p1,
 void kvmclock_init(void);
 void kvmclock_disable(void);
 bool kvm_para_available(void);
+
 unsigned int kvm_arch_para_features(void);
 unsigned int kvm_arch_para_hints(void);
+
 void kvm_async_pf_task_wait_schedule(u32 token);
 u32 kvm_read_and_reset_apf_flags(void);
 bool __kvm_handle_async_pf(struct pt_regs *regs, u32 token);
 
 DECLARE_STATIC_KEY_FALSE(kvm_async_pf_enabled);
 
-static __always_inline bool kvm_handle_async_pf(struct pt_regs *regs, u32 token)
+static __always_inline 
+bool kvm_handle_async_pf(struct pt_regs *regs, u32 token)
 {
 	if (static_branch_unlikely(&kvm_async_pf_enabled))
 		return __kvm_handle_async_pf(regs, token);
@@ -141,8 +152,7 @@ static __always_inline bool kvm_handle_async_pf(struct pt_regs *regs, u32 token)
 void __init kvm_spinlock_init(void);
 #else /* !CONFIG_PARAVIRT_SPINLOCKS */
 static inline void kvm_spinlock_init(void)
-{
-}
+{}
 #endif /* CONFIG_PARAVIRT_SPINLOCKS */
 
 #else /* CONFIG_KVM_GUEST */

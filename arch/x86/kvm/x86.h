@@ -15,18 +15,25 @@
 struct kvm_caps {
 	/* control of guest tsc rate supported? */
 	bool has_tsc_control;
+
 	/* maximum supported tsc_khz for guests */
 	u32  max_guest_tsc_khz;
+
 	/* number of bits of the fractional part of the TSC scaling ratio */
 	u8   tsc_scaling_ratio_frac_bits;
+
 	/* maximum allowed value of TSC scaling ratio */
 	u64  max_tsc_scaling_ratio;
+
 	/* 1ull << kvm_caps.tsc_scaling_ratio_frac_bits */
 	u64  default_tsc_scaling_ratio;
+
 	/* bus lock detection supported? */
 	bool has_bus_lock_exit;
+
 	/* notify VM exit supported? */
 	bool has_notify_vmexit;
+
 	/* bit mask of VM types */
 	u32 supported_vm_types;
 
@@ -149,7 +156,8 @@ void kvm_service_local_tlb_flush_requests(struct kvm_vcpu *vcpu);
 int kvm_check_nested_events(struct kvm_vcpu *vcpu);
 
 /* Forcibly leave the nested mode in cases like a vCPU reset */
-static inline void kvm_leave_nested(struct kvm_vcpu *vcpu)
+static inline 
+void kvm_leave_nested(struct kvm_vcpu *vcpu)
 {
 	kvm_x86_ops.nested_ops->leave_nested(vcpu);
 }
@@ -162,7 +170,8 @@ static inline void kvm_leave_nested(struct kvm_vcpu *vcpu)
  * this case L1 and L2). The exception is if bare metal supports same mode IBRS,
  * which offers protection within the same mode, and hence protects L1 from L2.
  */
-static inline void kvm_nested_vmexit_handle_ibrs(struct kvm_vcpu *vcpu)
+static inline 
+void kvm_nested_vmexit_handle_ibrs(struct kvm_vcpu *vcpu)
 {
 	if (cpu_feature_enabled(X86_FEATURE_AMD_IBRS_SAME_MODE))
 		return;
@@ -183,7 +192,8 @@ static inline void kvm_nested_vmexit_handle_ibrs(struct kvm_vcpu *vcpu)
  * is if userspace sets CPUID and feature MSRs (to enable VMX/SVM), then sets
  * nested state, and then attempts to set CPUID and/or feature MSRs *again*.
  */
-static inline bool kvm_can_set_cpuid_and_feature_msrs(struct kvm_vcpu *vcpu)
+static inline 
+bool kvm_can_set_cpuid_and_feature_msrs(struct kvm_vcpu *vcpu)
 {
 	return vcpu->arch.last_vmentry_cpu == -1 && !is_guest_mode(vcpu);
 }
@@ -193,57 +203,68 @@ static inline bool kvm_can_set_cpuid_and_feature_msrs(struct kvm_vcpu *vcpu)
  * control since the nested VM-Enter was initiated (in which case, userspace
  * may have modified vCPU state to induce an architecturally invalid VM-Exit).
  */
-static inline void kvm_warn_on_nested_run_pending(struct kvm_vcpu *vcpu)
+static inline 
+void kvm_warn_on_nested_run_pending(struct kvm_vcpu *vcpu)
 {
 	WARN_ON_ONCE(vcpu->arch.nested_run_pending == KVM_NESTED_RUN_PENDING);
 }
 
-static inline void kvm_set_mp_state(struct kvm_vcpu *vcpu, int mp_state)
+static inline 
+void kvm_set_mp_state(struct kvm_vcpu *vcpu, int mp_state)
 {
 	vcpu->arch.mp_state = mp_state;
 	if (mp_state == KVM_MP_STATE_RUNNABLE)
 		vcpu->arch.pv.pv_unhalted = false;
 }
 
-static inline bool kvm_is_exception_pending(struct kvm_vcpu *vcpu)
+static inline 
+bool kvm_is_exception_pending(struct kvm_vcpu *vcpu)
 {
-	return vcpu->arch.exception.pending ||
-	       vcpu->arch.exception_vmexit.pending ||
-	       kvm_test_request(KVM_REQ_TRIPLE_FAULT, vcpu);
+	return (
+		vcpu->arch.exception.pending ||
+		vcpu->arch.exception_vmexit.pending ||
+		kvm_test_request(KVM_REQ_TRIPLE_FAULT, vcpu);
+	)
 }
 
-static inline void kvm_clear_exception_queue(struct kvm_vcpu *vcpu)
+static inline 
+void kvm_clear_exception_queue(struct kvm_vcpu *vcpu)
 {
 	vcpu->arch.exception.pending = false;
 	vcpu->arch.exception.injected = false;
 	vcpu->arch.exception_vmexit.pending = false;
 }
 
-static inline void kvm_queue_interrupt(struct kvm_vcpu *vcpu, u8 vector,
-	bool soft)
-{
+static inline void kvm_queue_interrupt(
+	struct kvm_vcpu *vcpu, 
+	u8 vector, bool soft
+){
 	vcpu->arch.interrupt.injected = true;
 	vcpu->arch.interrupt.soft = soft;
 	vcpu->arch.interrupt.nr = vector;
 }
 
-static inline void kvm_clear_interrupt_queue(struct kvm_vcpu *vcpu)
+static inline 
+void kvm_clear_interrupt_queue(struct kvm_vcpu *vcpu)
 {
 	vcpu->arch.interrupt.injected = false;
 }
 
-static inline bool kvm_event_needs_reinjection(struct kvm_vcpu *vcpu)
+static inline 
+bool kvm_event_needs_reinjection(struct kvm_vcpu *vcpu)
 {
 	return vcpu->arch.exception.injected || vcpu->arch.interrupt.injected ||
 		vcpu->arch.nmi_injected;
 }
 
-static inline bool kvm_exception_is_soft(unsigned int nr)
+static inline 
+bool kvm_exception_is_soft(unsigned int nr)
 {
 	return (nr == BP_VECTOR) || (nr == OF_VECTOR);
 }
 
-static inline bool x86_exception_has_error_code(unsigned int vector)
+static inline 
+bool x86_exception_has_error_code(unsigned int vector)
 {
 	static u32 exception_has_error_code = BIT(DF_VECTOR) | BIT(TS_VECTOR) |
 			BIT(NP_VECTOR) | BIT(SS_VECTOR) | BIT(GP_VECTOR) |
@@ -286,33 +307,39 @@ static inline u8 max_host_virt_addr_bits(void)
  * This allows for example to invalidate 5-level addresses of a guest from a
  * host which uses 4-level paging.
  */
-static inline bool is_noncanonical_address(u64 la, struct kvm_vcpu *vcpu,
-					   unsigned int flags)
-{
+static inline bool is_noncanonical_address(
+	u64 la, struct kvm_vcpu *vcpu,
+	unsigned int flags
+){
 	if (flags & (X86EMUL_F_INVLPG | X86EMUL_F_MSR | X86EMUL_F_DT_LOAD))
 		return !__is_canonical_address(la, max_host_virt_addr_bits());
 	else
 		return !__is_canonical_address(la, vcpu_virt_addr_bits(vcpu));
 }
 
-static inline bool is_noncanonical_msr_address(u64 la, struct kvm_vcpu *vcpu)
-{
+static inline bool is_noncanonical_msr_address(
+	u64 la, struct kvm_vcpu *vcpu
+){
 	return is_noncanonical_address(la, vcpu, X86EMUL_F_MSR);
 }
 
-static inline bool is_noncanonical_base_address(u64 la, struct kvm_vcpu *vcpu)
-{
+static inline bool is_noncanonical_base_address(
+	u64 la, struct kvm_vcpu *vcpu
+){
 	return is_noncanonical_address(la, vcpu, X86EMUL_F_DT_LOAD);
 }
 
-static inline bool is_noncanonical_invlpg_address(u64 la, struct kvm_vcpu *vcpu)
-{
+static inline bool is_noncanonical_invlpg_address(
+	u64 la, struct kvm_vcpu *vcpu
+){
 	return is_noncanonical_address(la, vcpu, X86EMUL_F_INVLPG);
 }
 
-static inline void vcpu_cache_mmio_info(struct kvm_vcpu *vcpu,
-					gva_t gva, gfn_t gfn, unsigned access)
-{
+static inline void vcpu_cache_mmio_info(
+	struct kvm_vcpu *vcpu,
+	gva_t gva, gfn_t gfn, 
+	unsigned access
+){
 	u64 gen = kvm_memslots(vcpu->kvm)->generation;
 
 	if (unlikely(gen & KVM_MEMSLOT_GEN_UPDATE_IN_PROGRESS))
@@ -328,7 +355,8 @@ static inline void vcpu_cache_mmio_info(struct kvm_vcpu *vcpu,
 	vcpu->arch.mmio_gen = gen;
 }
 
-static inline bool vcpu_match_mmio_gen(struct kvm_vcpu *vcpu)
+static inline 
+bool vcpu_match_mmio_gen(struct kvm_vcpu *vcpu)
 {
 	return vcpu->arch.mmio_gen == kvm_memslots(vcpu->kvm)->generation;
 }
@@ -339,7 +367,8 @@ static inline bool vcpu_match_mmio_gen(struct kvm_vcpu *vcpu)
  */
 #define MMIO_GVA_ANY (~(gva_t)0)
 
-static inline void vcpu_clear_mmio_info(struct kvm_vcpu *vcpu, gva_t gva)
+static inline 
+void vcpu_clear_mmio_info(struct kvm_vcpu *vcpu, gva_t gva)
 {
 	if (gva != MMIO_GVA_ANY && vcpu->arch.mmio_gva != (gva & PAGE_MASK))
 		return;
@@ -347,25 +376,35 @@ static inline void vcpu_clear_mmio_info(struct kvm_vcpu *vcpu, gva_t gva)
 	vcpu->arch.mmio_gva = 0;
 }
 
-static inline bool vcpu_match_mmio_gva(struct kvm_vcpu *vcpu, unsigned long gva)
-{
-	if (vcpu_match_mmio_gen(vcpu) && vcpu->arch.mmio_gva &&
-	      vcpu->arch.mmio_gva == (gva & PAGE_MASK))
+static inline bool vcpu_match_mmio_gva(
+	struct kvm_vcpu *vcpu, 
+	unsigned long gva
+){
+	if (
+		vcpu_match_mmio_gen(vcpu) && 
+		vcpu->arch.mmio_gva &&
+		vcpu->arch.mmio_gva == (gva & PAGE_MASK)
+	)
 		return true;
 
 	return false;
 }
 
-static inline bool vcpu_match_mmio_gpa(struct kvm_vcpu *vcpu, gpa_t gpa)
-{
-	if (vcpu_match_mmio_gen(vcpu) && vcpu->arch.mmio_gfn &&
-	      vcpu->arch.mmio_gfn == gpa >> PAGE_SHIFT)
+static inline bool vcpu_match_mmio_gpa(
+	struct kvm_vcpu *vcpu, gpa_t gpa
+){
+	if (
+		vcpu_match_mmio_gen(vcpu) && 
+		vcpu->arch.mmio_gfn &&
+		vcpu->arch.mmio_gfn == gpa >> PAGE_SHIFT
+	)
 		return true;
 
 	return false;
 }
 
-static inline bool kvm_check_has_quirk(struct kvm *kvm, u64 quirk)
+static inline 
+bool kvm_check_has_quirk(struct kvm *kvm, u64 quirk)
 {
 	return !(READ_ONCE(kvm->arch.disabled_quirks) & quirk);
 }

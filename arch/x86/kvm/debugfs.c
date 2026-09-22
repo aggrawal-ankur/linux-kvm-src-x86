@@ -58,23 +58,36 @@ DEFINE_SIMPLE_ATTRIBUTE(vcpu_tsc_scaling_frac_fops, vcpu_get_tsc_scaling_frac_bi
 
 void kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry)
 {
-	debugfs_create_file("guest_mode", 0444, debugfs_dentry, vcpu,
-			    &vcpu_guest_mode_fops);
-	debugfs_create_file("tsc-offset", 0444, debugfs_dentry, vcpu,
-			    &vcpu_tsc_offset_fops);
+	debugfs_create_file(
+		"guest_mode", 0444, debugfs_dentry, vcpu,
+		&vcpu_guest_mode_fops
+	);
 
-	if (lapic_in_kernel(vcpu))
-		debugfs_create_file("lapic_timer_advance_ns", 0444,
-				    debugfs_dentry, vcpu,
-				    &vcpu_timer_advance_ns_fops);
+	debugfs_create_file(
+		"tsc-offset", 0444, debugfs_dentry, vcpu,
+		&vcpu_tsc_offset_fops
+	);
+
+	if (lapic_in_kernel(vcpu)){
+		debugfs_create_file(
+			"lapic_timer_advance_ns", 0444,
+			debugfs_dentry, vcpu,
+			&vcpu_timer_advance_ns_fops
+		);
+	}
 
 	if (kvm_caps.has_tsc_control) {
-		debugfs_create_file("tsc-scaling-ratio", 0444,
-				    debugfs_dentry, vcpu,
-				    &vcpu_tsc_scaling_fops);
-		debugfs_create_file("tsc-scaling-ratio-frac-bits", 0444,
-				    debugfs_dentry, vcpu,
-				    &vcpu_tsc_scaling_frac_fops);
+		debugfs_create_file(
+			"tsc-scaling-ratio", 0444,
+			debugfs_dentry, vcpu,
+			&vcpu_tsc_scaling_fops
+		);
+
+		debugfs_create_file(
+			"tsc-scaling-ratio-frac-bits", 0444,
+			debugfs_dentry, vcpu,
+			&vcpu_tsc_scaling_frac_fops
+		);
 	}
 }
 
@@ -93,6 +106,7 @@ static int kvm_mmu_rmaps_stat_show(struct seq_file *m, void *v)
 	struct kvm_memory_slot *slot;
 	struct kvm_memslots *slots;
 	unsigned int lpage_size, index;
+
 	/* Still small enough to be on the stack */
 	unsigned int *log[KVM_NR_PAGE_SIZES], *cur;
 	int i, j, k, l, ret;
@@ -175,7 +189,6 @@ static int kvm_mmu_rmaps_stat_open(struct inode *inode, struct file *file)
 static int kvm_mmu_rmaps_stat_release(struct inode *inode, struct file *file)
 {
 	struct kvm *kvm = inode->i_private;
-
 	kvm_put_kvm(kvm);
 
 	return single_release(inode, file);
@@ -191,6 +204,9 @@ static const struct file_operations mmu_rmaps_stat_fops = {
 
 void kvm_arch_create_vm_debugfs(struct kvm *kvm)
 {
-	debugfs_create_file("mmu_rmaps_stat", 0644, kvm->debugfs_dentry, kvm,
-			    &mmu_rmaps_stat_fops);
+	debugfs_create_file(
+		"mmu_rmaps_stat", 0644, 
+		kvm->debugfs_dentry, kvm,
+		&mmu_rmaps_stat_fops
+	);
 }

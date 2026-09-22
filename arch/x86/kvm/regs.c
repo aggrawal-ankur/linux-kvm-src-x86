@@ -14,8 +14,8 @@ unsigned long kvm_get_linear_rip(struct kvm_vcpu *vcpu)
 
 	if (is_64_bit_mode(vcpu))
 		return kvm_rip_read(vcpu);
-	return (u32)(kvm_get_segment_base(vcpu, VCPU_SREG_CS) +
-		     kvm_rip_read(vcpu));
+
+	return (u32)(kvm_get_segment_base(vcpu, VCPU_SREG_CS) + kvm_rip_read(vcpu));
 }
 EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_get_linear_rip);
 
@@ -38,9 +38,12 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_get_rflags);
 
 void __kvm_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
 {
-	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP &&
-	    kvm_is_linear_rip(vcpu, vcpu->arch.singlestep_rip))
+	if (
+		vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP &&
+		kvm_is_linear_rip(vcpu, vcpu->arch.singlestep_rip)
+	)
 		rflags |= X86_EFLAGS_TF;
+
 	kvm_x86_call(set_rflags)(vcpu, rflags);
 }
 
@@ -72,6 +75,7 @@ static void __get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
 	regs->rdi = kvm_rdi_read_raw(vcpu);
 	regs->rsp = kvm_rsp_read(vcpu);
 	regs->rbp = kvm_rbp_read_raw(vcpu);
+
 #ifdef CONFIG_X86_64
 	regs->r8 = kvm_r8_read_raw(vcpu);
 	regs->r9 = kvm_r9_read_raw(vcpu);
@@ -850,8 +854,10 @@ int kvm_vcpu_ioctl_x86_set_debugregs(struct kvm_vcpu *vcpu,
 {
 	unsigned int i;
 
-	if (vcpu->kvm->arch.has_protected_state &&
-	    vcpu->arch.guest_state_protected)
+	if (
+		vcpu->kvm->arch.has_protected_state &&
+		vcpu->arch.guest_state_protected
+	)
 		return -EINVAL;
 
 	if (dbgregs->flags)
@@ -859,6 +865,7 @@ int kvm_vcpu_ioctl_x86_set_debugregs(struct kvm_vcpu *vcpu,
 
 	if (!kvm_dr6_valid(dbgregs->dr6))
 		return -EINVAL;
+
 	if (!kvm_dr7_valid(dbgregs->dr7))
 		return -EINVAL;
 
